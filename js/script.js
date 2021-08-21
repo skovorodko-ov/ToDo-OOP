@@ -29,6 +29,7 @@ class Todo {
     li.insertAdjacentHTML('beforeend', `
       <span class="text-todo">${todo.value}</span>
 				<div class="todo-buttons">
+          <button class="todo-edit"></button>
 					<button class="todo-remove"></button>
 					<button class="todo-complete"></button>
 				</div>
@@ -67,7 +68,6 @@ class Todo {
         this.todoData.delete(item.key);
         this.render();
       }
-      
     });
   }
 
@@ -81,15 +81,56 @@ class Todo {
     });
   }
 
+  animatedDelete(e, count) {
+    e.target.parentNode.parentNode.style.opacity = `${1 / count}`;
+    count += 10;
+  }
+
+  todoEdit(e, text) {
+    if (text !== null && text.trim() !== '') {
+      let key = e.target.parentNode.parentNode.key;
+      this.todoData.forEach((item) => {
+        if (item.key === key) {
+          item.value = text;
+          this.render();
+        }
+      });
+    }
+  }
+
   handler() {
     this.todoContainer.addEventListener('click', (e) => {
-      if (e.target.className === 'todo-complete') {
+      if (e.target.className === 'todo-edit') {
+        this.todoEdit(e, prompt('Что хотите поменять?'));
+      }
+
+      let count = 1;
+      let interval = setInterval(() => {
+        count *= 1.1;
+        if (count < 2000) {
+          if (e.target.className === 'todo-complete') {
+            e.target.parentNode.parentNode.style.transform = `translateX(${count}px)`;
+          } else {
+            if (e.target.className === 'todo-remove') {
+              e.target.parentNode.parentNode.style.transform = `translateX(-${count}px)`;
+            }
+          }
+          
+        } else {
+          clearInterval(interval);
+          count = 1;
+        }
+      }, 10);
+
+      setTimeout(() => {
+        if (e.target.className === 'todo-complete') {
         this.completedItem(e);
       } else {
         if (e.target.className === 'todo-remove') {
           this.deleteItem(e);
+          }
         }
-      }
+      }, 1000);
     });
   }
 
